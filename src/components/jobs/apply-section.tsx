@@ -93,6 +93,11 @@ export function ApplySection({ jobId }: ApplySectionProps) {
     }
 
     const submitApplication = async () => {
+        if (!user) {
+            toast.error("You must be logged in to apply.")
+            return
+        }
+
         setIsApplying(true)
         try {
             // 1. Create application
