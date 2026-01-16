@@ -96,21 +96,6 @@ export default async function Home() {
                             </Link>
                         </div>
 
-                        {/* Mobile Bottom Fixed Nav */}
-                        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-background border-t p-4 flex gap-3 pb-6 safe-area-pb shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
-                            <Link href="/jobs" className="flex-1">
-                                <Button size="lg" className="h-12 w-full text-base shadow-lg shadow-green-500/20">
-                                    Browse Jobs
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                </Button>
-                            </Link>
-                            <Link href="/signup?role=recruiter&intent=post_job" className="flex-1">
-                                <Button variant="outline" size="lg" className="h-12 w-full text-base border-green-200 hover:bg-green-50 hover:text-green-700 dark:border-green-800 dark:hover:bg-green-900/50 dark:hover:text-green-300">
-                                    Post a Job
-                                </Button>
-                            </Link>
-                        </div>
-
                         {/* Recent Jobs */}
                         <div className="w-full max-w-5xl pt-16 text-left">
                             <div className="flex items-center justify-between mb-6">
@@ -236,6 +221,21 @@ export default async function Home() {
                     </div>
                 </div>
             </section>
+
+            {/* Mobile Bottom Fixed Nav */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-background border-t p-4 flex gap-3 pb-6 safe-area-pb shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
+                <Link href="/jobs" className="flex-1">
+                    <Button size="lg" className="h-12 w-full text-base shadow-lg shadow-green-500/20">
+                        Browse Jobs
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </Link>
+                <Link href="/signup?role=recruiter&intent=post_job" className="flex-1">
+                    <Button variant="outline" size="lg" className="h-12 w-full text-base border-green-200 hover:bg-green-50 hover:text-green-700 dark:border-green-800 dark:hover:bg-green-900/50 dark:hover:text-green-300">
+                        Post a Job
+                    </Button>
+                </Link>
+            </div>
         </div>
     )
 }
