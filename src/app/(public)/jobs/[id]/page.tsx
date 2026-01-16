@@ -27,7 +27,7 @@ export default async function JobPage({ params }: JobPageProps) {
     }
 
     // Type casting
-    const typedJob = job as unknown as (Job & { recruiter: { company_name: string; company_website?: string } })
+    const typedJob = job as unknown as (Job & { recruiter: { company_name: string; company_website?: string }, company_name?: string | null })
 
     return (
         <div className="container py-10 px-4 md:px-6">
@@ -39,7 +39,7 @@ export default async function JobPage({ params }: JobPageProps) {
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 text-muted-foreground">
                             <div className="flex items-center gap-1">
                                 <Building2 className="h-4 w-4" />
-                                <span className="font-medium text-foreground">{typedJob.recruiter?.company_name}</span>
+                                <span className="font-medium text-foreground">{typedJob.company_name || typedJob.recruiter?.company_name}</span>
                             </div>
                             <div className="hidden sm:block text-border">|</div>
                             <div className="flex items-center gap-1">

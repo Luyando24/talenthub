@@ -22,9 +22,11 @@ import { createClient } from "@/utils/supabase/client"
 import { useState } from "react"
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 
 const jobFormSchema = z.object({
     title: z.string().min(2, "Title must be at least 2 characters."),
+    companyName: z.string().optional(), // Only for Admins
     description: z.string().min(10, "Description must be at least 10 characters."),
     requirements: z.string().min(10, "Requirements must be at least 10 characters."),
     location: z.string().min(2, "Location is required."),
@@ -40,7 +42,7 @@ type JobFormValues = z.infer<typeof jobFormSchema>
 
 export function JobForm() {
     const router = useRouter()
-    const { user } = useAuth()
+    const { user, profile } = useAuth()
     const [saving, setSaving] = useState(false)
     const supabase = createClient()
 
@@ -48,6 +50,7 @@ export function JobForm() {
         resolver: zodResolver(jobFormSchema),
         defaultValues: {
             title: "",
+            companyName: "",
             description: "",
             requirements: "",
             location: "Lusaka, Zambia",
@@ -74,6 +77,8 @@ export function JobForm() {
                 .insert({
                     recruiter_id: user.id,
                     title: data.title,
+                    // If admin, use the companyName from form, otherwise null (will fall back to recruiter profile)
+                    company_name: profile?.role === 'ADMIN' ? data.companyName : null,
                     description: data.description,
                     requirements: data.requirements,
                     location: data.location,
@@ -131,6 +136,25 @@ export function JobForm() {
                         </FormItem>
                     )}
                 />
+
+                {profile?.role === 'ADMIN' && (
+                    <FormField
+                        control={form.control}
+                        name="companyName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Company Name (Admin Override)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g. Acme Corp" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                    Leave blank to use your profile name (if applicable), or specify a company name.
+                                </FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -208,10 +232,10 @@ export function JobForm() {
                         <FormItem>
                             <FormLabel>Description</FormLabel>
                             <FormControl>
-                                <Textarea
+                                <RichTextEditor
                                     placeholder="Describe the role responsibilities..."
-                                    className="min-h-[150px]"
-                                    {...field}
+                                    value={field.value}
+                                    onChange={field.onChange}
                                 />
                             </FormControl>
                             <FormMessage />
@@ -226,14 +250,14 @@ export function JobForm() {
                         <FormItem>
                             <FormLabel>Requirements</FormLabel>
                             <FormControl>
-                                <Textarea
+                                <RichTextEditor
                                     placeholder="List the key requirements..."
-                                    className="min-h-[150px]"
-                                    {...field}
+                                    value={field.value}
+                                    onChange={field.onChange}
                                 />
                             </FormControl>
                             <FormDescription>
-                                You can paste a list here.
+                                You can format the text using the toolbar above.
                             </FormDescription>
                             <FormMessage />
                         </FormItem>

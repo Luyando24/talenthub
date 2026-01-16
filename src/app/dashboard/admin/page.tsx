@@ -1,9 +1,11 @@
 import { RecruiterApprovalList } from "@/components/dashboard/admin/recruiter-approval-list"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/utils/supabase/server"
-import { Users, Building, ShieldAlert } from "lucide-react"
+import { Users, Building, ShieldAlert, Plus } from "lucide-react"
 import { redirect } from "next/navigation"
 import { RecruiterProfile } from "@/types"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 
@@ -31,7 +33,15 @@ export default async function AdminDashboard() {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-bold tracking-tight">Admin Dashboard</h2>
+                <Link href="/dashboard/admin/jobs/new">
+                    <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Post Job
+                    </Button>
+                </Link>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-3">
                 <Card>

@@ -20,7 +20,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 interface JobCardProps {
-    job: Job & { recruiter?: { company_name: string } }
+    job: Job & { recruiter?: { company_name: string }, company_name?: string | null }
 }
 
 export function JobCard({ job }: JobCardProps) {
@@ -100,7 +100,7 @@ export function JobCard({ job }: JobCardProps) {
                     <div>
                         <CardTitle className="text-xl font-bold line-clamp-1">{job.title}</CardTitle>
                         <CardDescription className="flex items-center gap-1 mt-1 text-base">
-                            {job.recruiter?.company_name || "Unknown Company"}
+                            {job.company_name || job.recruiter?.company_name || "Unknown Company"}
                         </CardDescription>
                     </div>
                     <Badge variant={job.job_type === 'Full-time' ? 'default' : 'secondary'} className="shrink-0">
