@@ -49,12 +49,13 @@ export function SignupForm() {
     const selectedRole = form.watch("role")
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log("Attempting signup with values:", values)
+        const email = values.email.trim()
+        console.log("Attempting signup with values:", { ...values, email })
         setIsLoading(true)
         
         // Attempt 1: With metadata
         const { data, error } = await supabase.auth.signUp({
-            email: values.email,
+            email: email,
             password: values.password,
             options: {
                 data: {
@@ -73,7 +74,7 @@ export function SignupForm() {
                 
                 // Attempt 2: Without metadata to bypass potential trigger casting issues
                 const { data: fallbackData, error: fallbackError } = await supabase.auth.signUp({
-                    email: values.email,
+                    email: email,
                     password: values.password,
                 })
 
