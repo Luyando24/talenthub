@@ -48,6 +48,27 @@ export function SignupForm() {
 
     const selectedRole = form.watch("role")
 
+    async function createExtendedProfile(userId: string, role: string, fullName: string) {
+        if (role === 'RECRUITER') {
+            const { error } = await supabase
+                .from('recruiter_profiles')
+                .upsert({
+                    id: userId,
+                    company_name: fullName, // Default to full name initially
+                    is_approved: false
+                })
+            if (error) console.error("Failed to create recruiter profile:", error)
+        } else if (role === 'CANDIDATE') {
+            const { error } = await supabase
+                .from('candidate_profiles')
+                .upsert({
+                    id: userId,
+                    skills: []
+                })
+            if (error) console.error("Failed to create candidate profile:", error)
+        }
+    }
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const email = values.email.trim()
         console.log("Attempting signup with values:", { ...values, email })
@@ -100,6 +121,8 @@ export function SignupForm() {
                         console.error("Failed to update profile after fallback:", updateError)
                         toast.warning("Account created, but failed to save profile details. Please update your profile.")
                     } else {
+                        // Create extended profile
+                        await createExtendedProfile(fallbackData.user.id, values.role, values.fullName)
                         toast.success("Account created successfully")
                     }
 
@@ -116,6 +139,9 @@ export function SignupForm() {
         }
 
         console.log("Signup success:", data)
+        if (data.user) {
+             await createExtendedProfile(data.user.id, values.role, values.fullName)
+        }
 
         toast.success("Account created successfully")
         router.refresh()
