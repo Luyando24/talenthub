@@ -5,6 +5,8 @@ import { Users, Building, ShieldAlert } from "lucide-react"
 import { redirect } from "next/navigation"
 import { RecruiterProfile } from "@/types"
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminDashboard() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

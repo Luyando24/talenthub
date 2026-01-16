@@ -5,6 +5,8 @@ import { Briefcase, Plus, Users, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 export default async function RecruiterDashboard() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
