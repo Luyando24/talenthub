@@ -22,7 +22,7 @@ export default function AboutPage() {
                             <Link href="/jobs">
                                 <Button size="lg">Find a Job</Button>
                             </Link>
-                            <Link href="/signup">
+                            <Link href="/signup?role=recruiter&intent=post_job">
                                 <Button variant="outline" size="lg">Post a Job</Button>
                             </Link>
                         </div>

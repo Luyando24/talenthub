@@ -16,7 +16,7 @@ export function Navbar() {
     const { user, profile, isLoading } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
 
-    let postJobLink = "/signup?role=recruiter"
+    let postJobLink = "/signup?role=recruiter&intent=post_job"
     if (user && profile) {
         if (profile.role === 'RECRUITER') postJobLink = "/dashboard/recruiter/jobs/new"
         if (profile.role === 'ADMIN') postJobLink = "/dashboard/admin/jobs/new"

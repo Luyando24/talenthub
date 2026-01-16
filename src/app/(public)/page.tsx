@@ -82,14 +82,29 @@ export default async function Home() {
                                 </Button>
                             </form>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-4 min-w-[300px] pt-4">
+                        <div className="flex flex-col sm:flex-row gap-4 min-w-[300px] pt-4 hidden md:flex">
                             <Link href="/jobs" className="flex-1">
                                 <Button size="lg" className="h-12 w-full text-base shadow-lg shadow-green-500/20 transition-transform hover:scale-105">
                                     Browse Jobs
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Button>
                             </Link>
-                            <Link href="/signup?role=recruiter" className="flex-1">
+                            <Link href="/signup?role=recruiter&intent=post_job" className="flex-1">
+                                <Button variant="outline" size="lg" className="h-12 w-full text-base border-green-200 hover:bg-green-50 hover:text-green-700 dark:border-green-800 dark:hover:bg-green-900/50 dark:hover:text-green-300">
+                                    Post a Job
+                                </Button>
+                            </Link>
+                        </div>
+
+                        {/* Mobile Bottom Fixed Nav */}
+                        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-t p-4 flex gap-3 pb-8">
+                            <Link href="/jobs" className="flex-1">
+                                <Button size="lg" className="h-12 w-full text-base shadow-lg shadow-green-500/20">
+                                    Browse Jobs
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <Link href="/signup?role=recruiter&intent=post_job" className="flex-1">
                                 <Button variant="outline" size="lg" className="h-12 w-full text-base border-green-200 hover:bg-green-50 hover:text-green-700 dark:border-green-800 dark:hover:bg-green-900/50 dark:hover:text-green-300">
                                     Post a Job
                                 </Button>

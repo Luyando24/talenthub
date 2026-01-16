@@ -59,7 +59,7 @@ export function UserDropdown() {
                     Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem onClick={() => signOut()}>
                     Log out
                 </DropdownMenuItem>
             </DropdownMenuContent>

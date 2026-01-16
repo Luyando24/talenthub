@@ -50,7 +50,7 @@ export function Footer() {
                     <div>
                         <h3 className="font-semibold mb-4">For Employers</h3>
                         <ul className="space-y-3 text-sm text-muted-foreground">
-                            <li><Link href="/signup?role=recruiter" className="hover:text-foreground transition-colors">Post a Job</Link></li>
+                            <li><Link href="/signup?role=recruiter&intent=post_job" className="hover:text-foreground transition-colors">Post a Job</Link></li>
                             <li><Link href="#" className="hover:text-foreground transition-colors">Browse Candidates</Link></li>
                             <li><Link href="#" className="hover:text-foreground transition-colors">Pricing Plans</Link></li>
                             <li><Link href="#" className="hover:text-foreground transition-colors">Recruiter Login</Link></li>
