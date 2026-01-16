@@ -52,7 +52,23 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
         
         console.log("User created successfully with ID:", userData.user.id)
 
-        // 2. Standard Client to sign in (set cookies)
+        // 2. Ensure basic profile exists (CRITICAL STEP)
+        // The trigger *should* have done this, but if it failed silently, we must do it manually here.
+        const { error: basicProfileError } = await supabaseAdmin
+            .from('profiles')
+            .upsert({
+                id: userData.user.id,
+                email: email,
+                full_name: data.fullName,
+                role: data.role
+            })
+        
+        if (basicProfileError) {
+            console.error("Basic profile creation/upsert error:", basicProfileError)
+            return { error: "Failed to create user profile. Please try again." }
+        }
+
+        // 3. Standard Client to sign in (set cookies)
         const supabase = await createServerClient()
         const { error: signInError } = await supabase.auth.signInWithPassword({
             email: email,
