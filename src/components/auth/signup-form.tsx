@@ -21,6 +21,8 @@ import { useState } from "react"
 import { Loader2, User, Briefcase, ArrowRight, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+import { signupAction } from "@/app/actions"
+
 const formSchema = z.object({
     fullName: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email(),
@@ -34,7 +36,7 @@ export function SignupForm() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [step, setStep] = useState<Step>('role-selection')
-    const supabase = createClient()
+    // const supabase = createClient() // No longer used for signup directly
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -48,99 +50,17 @@ export function SignupForm() {
 
     const selectedRole = form.watch("role")
 
-    async function createExtendedProfile(userId: string, role: string, fullName: string) {
-        if (role === 'RECRUITER') {
-            const { error } = await supabase
-                .from('recruiter_profiles')
-                .upsert({
-                    id: userId,
-                    company_name: fullName, // Default to full name initially
-                    is_approved: false
-                })
-            if (error) console.error("Failed to create recruiter profile:", error)
-        } else if (role === 'CANDIDATE') {
-            const { error } = await supabase
-                .from('candidate_profiles')
-                .upsert({
-                    id: userId,
-                    skills: []
-                })
-            if (error) console.error("Failed to create candidate profile:", error)
-        }
-    }
-
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        const email = values.email.trim()
-        console.log("Attempting signup with values:", { ...values, email })
+        console.log("Attempting signup with values:", values)
         setIsLoading(true)
-        
-        // Attempt 1: With metadata
-        const { data, error } = await supabase.auth.signUp({
-            email: email,
-            password: values.password,
-            options: {
-                data: {
-                    full_name: values.fullName,
-                    role: values.role,
-                },
-            },
-        })
 
-        if (error) {
-            console.error("Signup attempt 1 failed:", error)
+        const result = await signupAction(values)
 
-            // Check if it's a database error (status 500)
-            if (error.status === 500 || error.message.includes("Database error")) {
-                console.log("Attempting fallback signup without metadata...")
-                
-                // Attempt 2: Without metadata to bypass potential trigger casting issues
-                const { data: fallbackData, error: fallbackError } = await supabase.auth.signUp({
-                    email: email,
-                    password: values.password,
-                })
-
-                if (fallbackError) {
-                    console.error("Fallback signup failed:", fallbackError)
-                    toast.error(`Signup failed: ${error.message}`)
-                    setIsLoading(false)
-                    return
-                }
-
-                // If fallback worked, we need to update the profile manually
-                if (fallbackData.user) {
-                    console.log("Fallback signup success, updating profile...")
-                    const { error: updateError } = await supabase
-                        .from('profiles')
-                        .update({
-                            full_name: values.fullName,
-                            role: values.role
-                        })
-                        .eq('id', fallbackData.user.id)
-
-                    if (updateError) {
-                        console.error("Failed to update profile after fallback:", updateError)
-                        toast.warning("Account created, but failed to save profile details. Please update your profile.")
-                    } else {
-                        // Create extended profile
-                        await createExtendedProfile(fallbackData.user.id, values.role, values.fullName)
-                        toast.success("Account created successfully")
-                    }
-
-                    router.refresh()
-                    router.push("/dashboard")
-                    setIsLoading(false)
-                    return
-                }
-            }
-
-            toast.error(`Signup failed: ${error.message}`)
+        if (result.error) {
+            console.error("Signup error:", result.error)
+            toast.error(`Signup failed: ${result.error}`)
             setIsLoading(false)
             return
-        }
-
-        console.log("Signup success:", data)
-        if (data.user) {
-             await createExtendedProfile(data.user.id, values.role, values.fullName)
         }
 
         toast.success("Account created successfully")
