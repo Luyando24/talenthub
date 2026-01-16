@@ -97,7 +97,7 @@ export default async function Home() {
                         </div>
 
                         {/* Mobile Bottom Fixed Nav */}
-                        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-t p-4 flex gap-3 pb-8">
+                        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-background border-t p-4 flex gap-3 pb-6 safe-area-pb shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
                             <Link href="/jobs" className="flex-1">
                                 <Button size="lg" className="h-12 w-full text-base shadow-lg shadow-green-500/20">
                                     Browse Jobs
