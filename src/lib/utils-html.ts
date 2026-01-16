@@ -1,5 +1,3 @@
-import { DOMParser } from 'xmldom'
-
 export function stripHtml(html: string): string {
     if (!html) return ""
     // Basic regex strip for client/server shared usage where DOMParser might not be available
