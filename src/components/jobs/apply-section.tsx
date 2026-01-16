@@ -43,22 +43,31 @@ export function ApplySection({ jobId }: ApplySectionProps) {
     const supabase = createClient()
 
     useEffect(() => {
+        // Only run check if we are sure we have a user and profile is loaded
+        // But also, if isLoading is false and we have no user, we shouldn't be checking
+        if (isLoading) return
+
         if (user && profile?.role === 'CANDIDATE') {
             const checkApplication = async () => {
                 setCheckingApplication(true)
-                const { data } = await supabase
-                    .from('applications')
-                    .select('id')
-                    .eq('job_id', jobId)
-                    .eq('candidate_id', user.id)
-                    .single()
+                try {
+                    const { data } = await supabase
+                        .from('applications')
+                        .select('id')
+                        .eq('job_id', jobId)
+                        .eq('candidate_id', user.id)
+                        .maybeSingle() // Use maybeSingle to avoid errors on no rows
 
-                if (data) setHasApplied(true)
-                setCheckingApplication(false)
+                    if (data) setHasApplied(true)
+                } catch (error) {
+                    console.error("Error checking application status:", error)
+                } finally {
+                    setCheckingApplication(false)
+                }
             }
             checkApplication()
         }
-    }, [user, profile, jobId, supabase])
+    }, [user, profile, isLoading, jobId, supabase])
 
     const fetchQuestions = async () => {
         const { data } = await supabase
