@@ -49,8 +49,9 @@ export function SignupForm() {
     const selectedRole = form.watch("role")
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
+        console.log("Attempting signup with values:", values)
         setIsLoading(true)
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email: values.email,
             password: values.password,
             options: {
@@ -62,10 +63,13 @@ export function SignupForm() {
         })
 
         if (error) {
-            toast.error(error.message)
+            console.error("Signup error details:", error)
+            toast.error(`Signup failed: ${error.message}`)
             setIsLoading(false)
             return
         }
+
+        console.log("Signup success:", data)
 
         toast.success("Account created successfully")
         router.refresh()
