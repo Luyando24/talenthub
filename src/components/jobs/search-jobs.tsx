@@ -23,17 +23,19 @@ export function SearchJobs() {
     }
 
     return (
-        <form onSubmit={handleSearch} className="flex w-full max-w-sm items-center space-x-2">
-            <Input
-                type="search"
-                placeholder="Search jobs..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full"
-            />
-            <Button type="submit" size="icon">
-                <Search className="h-4 w-4" />
-                <span className="sr-only">Search</span>
+        <form onSubmit={handleSearch} className="flex w-full max-w-md items-center space-x-2">
+            <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search by job title..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full pl-9 bg-background shadow-sm"
+                />
+            </div>
+            <Button type="submit" className="shadow-sm">
+                Search
             </Button>
         </form>
     )

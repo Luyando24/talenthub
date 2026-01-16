@@ -18,7 +18,7 @@ export default async function JobPage({ params }: JobPageProps) {
 
     const { data: job, error } = await supabase
         .from("jobs")
-        .select("*, recruiter:recruiter_profiles(company_name, company_website, is_approved)")
+        .select("*")
         .eq("id", id)
         .single()
 
@@ -26,8 +26,20 @@ export default async function JobPage({ params }: JobPageProps) {
         notFound()
     }
 
+    // Fetch recruiter details manually
+    const { data: recruiter } = await supabase
+        .from("recruiter_profiles")
+        .select("company_name, company_website, is_approved")
+        .eq("id", job.recruiter_id)
+        .single()
+
+    const jobWithRecruiter = {
+        ...job,
+        recruiter: recruiter || { company_name: "Unknown" }
+    }
+
     // Type casting
-    const typedJob = job as unknown as (Job & { recruiter: { company_name: string; company_website?: string }, company_name?: string | null })
+    const typedJob = jobWithRecruiter as unknown as (Job & { recruiter: { company_name: string; company_website?: string }, company_name?: string | null })
 
     return (
         <div className="container py-10 px-4 md:px-6">
@@ -75,18 +87,20 @@ export default async function JobPage({ params }: JobPageProps) {
                     <div className="space-y-8">
                         <section className="space-y-4">
                             <h2 className="text-xl font-bold">About the Role</h2>
-                            <div className="prose prose-gray dark:prose-invert max-w-none whitespace-pre-line text-muted-foreground">
-                                {typedJob.description}
-                            </div>
+                            <div 
+                                className="prose prose-gray dark:prose-invert max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+                                dangerouslySetInnerHTML={{ __html: typedJob.description }}
+                            />
                         </section>
 
                         <Separator />
 
                         <section className="space-y-4">
                             <h2 className="text-xl font-bold">Requirements</h2>
-                            <div className="prose prose-gray dark:prose-invert max-w-none whitespace-pre-line text-muted-foreground">
-                                {typedJob.requirements}
-                            </div>
+                            <div 
+                                className="prose prose-gray dark:prose-invert max-w-none text-muted-foreground [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:list-decimal [&>ol]:pl-5"
+                                dangerouslySetInnerHTML={{ __html: typedJob.requirements }}
+                            />
                         </section>
                     </div>
 

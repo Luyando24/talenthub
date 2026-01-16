@@ -13,13 +13,22 @@ import {
 import { useState } from "react"
 
 export function Navbar() {
-    const { user, isLoading } = useAuth()
+    const { user, profile, isLoading } = useAuth()
     const [isOpen, setIsOpen] = useState(false)
+
+    let postJobLink = "/signup?role=recruiter"
+    if (user && profile) {
+        if (profile.role === 'RECRUITER') postJobLink = "/dashboard/recruiter/jobs/new"
+        if (profile.role === 'ADMIN') postJobLink = "/dashboard/admin/jobs/new"
+    }
 
     const NavLinks = () => (
         <>
             <Link href="/jobs" className="text-sm font-medium transition-colors hover:text-primary">
                 Find Jobs
+            </Link>
+            <Link href={postJobLink} className="text-sm font-medium transition-colors hover:text-primary">
+                Post Job
             </Link>
             <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
                 About
@@ -60,7 +69,7 @@ export function Navbar() {
                     {/* Mobile Menu */}
                     <Sheet open={isOpen} onOpenChange={setIsOpen}>
                         <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="md:hidden">
+                            <Button variant="ghost" size="icon" className="md:hidden" suppressHydrationWarning>
                                 <Menu className="h-5 w-5" />
                                 <span className="sr-only">Toggle menu</span>
                             </Button>
@@ -73,6 +82,9 @@ export function Navbar() {
                                 <div className="flex flex-col gap-4">
                                     <Link href="/jobs" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
                                         Find Jobs
+                                    </Link>
+                                    <Link href={postJobLink} onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
+                                        Post Job
                                     </Link>
                                     <Link href="/about" onClick={() => setIsOpen(false)} className="text-sm font-medium hover:text-primary">
                                         About

@@ -11,15 +11,30 @@ export default async function Home() {
 
     const { data: jobs } = await supabase
         .from('jobs')
-        .select(`
-            *,
-            recruiter:recruiter_profiles(company_name)
-        `)
+        .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false })
         .limit(10)
 
-    const recentJobs = (jobs || []) as (Job & { recruiter: { company_name: string } })[]
+    // Manual join to get recruiter profiles
+    let jobsWithRecruiters: any[] = []
+    
+    if (jobs && jobs.length > 0) {
+        const recruiterIds = Array.from(new Set(jobs.map(j => j.recruiter_id)))
+        const { data: recruiters } = await supabase
+            .from("recruiter_profiles")
+            .select("id, company_name")
+            .in("id", recruiterIds)
+        
+        const recruiterMap = new Map(recruiters?.map(r => [r.id, r]) || [])
+
+        jobsWithRecruiters = jobs.map(job => ({
+            ...job,
+            recruiter: recruiterMap.get(job.recruiter_id) || { company_name: "Unknown" }
+        }))
+    }
+
+    const recentJobs = (jobsWithRecruiters || []) as (Job & { recruiter: { company_name: string } })[]
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-3.5rem)]">

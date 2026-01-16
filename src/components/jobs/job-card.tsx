@@ -18,6 +18,7 @@ import { createClient } from "@/utils/supabase/client"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { stripHtml } from "@/lib/utils-html"
 
 interface JobCardProps {
     job: Job & { recruiter?: { company_name: string }, company_name?: string | null }
@@ -94,47 +95,55 @@ export function JobCard({ job }: JobCardProps) {
     }
 
     return (
-        <Card className="flex flex-col h-full hover:border-primary/50 transition-colors">
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-xl font-bold line-clamp-1">{job.title}</CardTitle>
-                        <CardDescription className="flex items-center gap-1 mt-1 text-base">
+        <Card className="flex flex-col h-full hover:border-primary/50 transition-colors relative group">
+            <CardHeader className="pb-2">
+                <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0 pr-2">
+                        <CardTitle className="text-lg font-bold line-clamp-2 leading-tight" title={job.title}>{job.title}</CardTitle>
+                        <CardDescription className="flex items-center gap-1 mt-1.5 text-sm truncate">
                             {job.company_name || job.recruiter?.company_name || "Unknown Company"}
                         </CardDescription>
                     </div>
-                    <Badge variant={job.job_type === 'Full-time' ? 'default' : 'secondary'} className="shrink-0">
-                        {job.job_type}
-                    </Badge>
+                    
+                    {/* Actions positioned top-right, but prevented from overflowing */}
+                    <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleSave()
+                            }}
+                            disabled={isLoading}
+                            className="h-8 w-8 rounded-full hover:bg-muted"
+                        >
+                            <Heart className={cn("h-4 w-4", isSaved ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
+                        </Button>
+                        <Link href={`/jobs/${job.id}`}>
+                            <Button size="sm" className="h-8 px-3 text-xs">Apply</Button>
+                        </Link>
+                    </div>
                 </div>
             </CardHeader>
-            <CardContent className="flex-1">
-                <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {job.location || "Lusaka, Zambia"}
+            <CardContent className="flex-1 pb-4">
+                <div className="flex flex-wrap gap-2 mb-3">
+                    <Badge variant={job.job_type === 'Full-time' ? 'default' : 'secondary'} className="text-[10px] px-2 py-0 h-5">
+                        {job.job_type}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        {job.location || "Lusaka"}
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Briefcase className="h-4 w-4" />
-                        {job.salary_range || "Competitive Salary"}
-                    </div>
-                    <p className="line-clamp-3 mt-2">{job.description}</p>
+                    {job.salary_range && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Briefcase className="h-3 w-3" />
+                            {job.salary_range}
+                        </div>
+                    )}
                 </div>
+                <p className="text-sm text-muted-foreground line-clamp-2">{stripHtml(job.description)}</p>
             </CardContent>
-            <CardFooter className="flex justify-between items-center pt-2">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleSave}
-                    disabled={isLoading}
-                    className="rounded-full hover:bg-muted"
-                >
-                    <Heart className={cn("h-5 w-5", isSaved ? "fill-red-500 text-red-500" : "text-muted-foreground")} />
-                </Button>
-                <Link href={`/jobs/${job.id}`}>
-                    <Button>Apply Now</Button>
-                </Link>
-            </CardFooter>
         </Card>
     )
 }
