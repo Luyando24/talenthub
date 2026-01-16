@@ -78,6 +78,19 @@ export function ApplySection({ jobId }: ApplySectionProps) {
             return
         }
 
+        // Check if profile is complete (resume is mandatory)
+        const { data: candidateProfile } = await supabase
+            .from('candidate_profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single()
+
+        if (!candidateProfile?.resume_url) {
+            toast.error("You must upload a resume to apply.")
+            router.push('/dashboard/candidate/profile')
+            return
+        }
+
         // Fetch questions first
         setIsApplying(true)
         const qs = await fetchQuestions()
