@@ -31,10 +31,18 @@ export default async function CandidateApplicationsPage() {
         .order("created_at", { ascending: false })
 
     // Type casting for joined data
-    const typedApps = (applications || []).map(app => ({
-        ...app,
-        job: Array.isArray(app.job) ? app.job[0] : app.job
-    }))
+    const typedApps = (applications || []).map(app => {
+        const job = Array.isArray(app.job) ? app.job[0] : app.job
+        const recruiter = Array.isArray(job.recruiter) ? job.recruiter[0] : job.recruiter
+
+        return {
+            ...app,
+            job: {
+                ...job,
+                recruiter
+            }
+        }
+    })
 
     return (
         <div className="space-y-6">
