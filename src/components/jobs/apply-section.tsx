@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Check } from "lucide-react"
 
 interface ApplySectionProps {
     jobId: string
@@ -37,6 +38,7 @@ export function ApplySection({ jobId }: ApplySectionProps) {
     const [questions, setQuestions] = useState<Question[]>([])
     const [answers, setAnswers] = useState<Record<string, string>>({})
     const [showQuestionsFor, setShowQuestionsFor] = useState(false) // toggle dialog
+    const [showSuccessDialog, setShowSuccessDialog] = useState(false) // New success modal
     const router = useRouter()
     const supabase = createClient()
 
@@ -147,6 +149,7 @@ export function ApplySection({ jobId }: ApplySectionProps) {
             toast.success("Application submitted successfully!")
             setHasApplied(true)
             setShowQuestionsFor(false)
+            setShowSuccessDialog(true) // Trigger success modal
         } catch (error) {
             console.error(error)
             toast.error("Failed to submit application.")
@@ -235,6 +238,30 @@ export function ApplySection({ jobId }: ApplySectionProps) {
                             {isApplying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Submit Application
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Success Dialog */}
+            <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+                <DialogContent className="sm:max-w-md">
+                    <div className="flex flex-col items-center justify-center text-center py-6 space-y-4">
+                        <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-2">
+                            <Check className="h-6 w-6" />
+                        </div>
+                        <DialogTitle className="text-2xl font-bold text-center">Application Sent!</DialogTitle>
+                        <DialogDescription className="text-center text-base">
+                            Your application has been successfully submitted to the recruiter.
+                            Good luck!
+                        </DialogDescription>
+                    </div>
+                    <DialogFooter className="flex-col sm:justify-center gap-2">
+                        <Link href="/jobs" className="w-full">
+                            <Button variant="outline" className="w-full">Browse More Jobs</Button>
+                        </Link>
+                        <Link href="/dashboard/candidate/applications" className="w-full">
+                            <Button className="w-full">Track Application</Button>
+                        </Link>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

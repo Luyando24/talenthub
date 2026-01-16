@@ -19,6 +19,7 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { stripHtml } from "@/lib/utils-html"
+import { ShareJobButton } from "@/components/jobs/share-job-button"
 
 interface JobCardProps {
     job: Job & { recruiter?: { company_name: string }, company_name?: string | null }
@@ -107,6 +108,12 @@ export function JobCard({ job }: JobCardProps) {
                     
                     {/* Actions positioned top-right, but prevented from overflowing */}
                     <div className="flex items-center gap-1 shrink-0">
+                        <ShareJobButton 
+                            jobId={job.id} 
+                            jobTitle={job.title} 
+                            companyName={job.company_name || job.recruiter?.company_name || "Unknown Company"} 
+                            className="h-8 w-8 rounded-full hover:bg-muted"
+                        />
                         <Button
                             variant="ghost"
                             size="icon"

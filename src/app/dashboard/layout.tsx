@@ -2,6 +2,7 @@
 
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar"
 import { UserDropdown } from "@/components/layout/user-dropdown"
+import { DashboardBreadcrumbs } from "@/components/layout/dashboard-breadcrumbs"
 import Link from "next/link"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
@@ -47,6 +48,7 @@ export default function DashboardLayout({
                     <UserDropdown />
                 </header>
                 <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+                    <DashboardBreadcrumbs />
                     {children}
                 </main>
             </div>

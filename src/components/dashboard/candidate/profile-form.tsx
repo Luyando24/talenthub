@@ -20,7 +20,7 @@ import { useAuth } from "@/context/auth-context"
 import { createClient } from "@/utils/supabase/client"
 import { useEffect, useState } from "react"
 import { CandidateProfile } from "@/types"
-import { Loader2 } from "lucide-react"
+import { Loader2, Upload, FileText, Trash2, ExternalLink } from "lucide-react"
 
 const profileFormSchema = z.object({
     fullName: z.string().min(2, {
@@ -42,6 +42,7 @@ export function ProfileForm() {
     const { user, profile } = useAuth()
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [uploading, setUploading] = useState(false)
     const supabase = createClient()
 
     const form = useForm<ProfileFormValues>({
@@ -85,6 +86,49 @@ export function ProfileForm() {
             fetchProfile()
         }
     }, [user, profile, form, supabase])
+
+    async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!e.target.files || e.target.files.length === 0) return
+
+        const file = e.target.files[0]
+        
+        // Validation
+        if (file.type !== 'application/pdf') {
+            toast.error("Please upload a PDF file.")
+            return
+        }
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            toast.error("File size must be less than 5MB.")
+            return
+        }
+
+        setUploading(true)
+        try {
+            const fileExt = file.name.split('.').pop()
+            const fileName = `${user?.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
+            const filePath = `${fileName}`
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('resumes')
+                .upload(filePath, file)
+
+            if (uploadError) throw uploadError
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('resumes')
+                .getPublicUrl(filePath)
+
+            form.setValue('resumeUrl', publicUrl)
+            toast.success("Resume uploaded successfully!")
+        } catch (error) {
+            console.error('Upload error:', error)
+            toast.error("Failed to upload resume. Please try again.")
+        } finally {
+            setUploading(false)
+        }
+    }
 
     async function onSubmit(data: ProfileFormValues) {
         if (!user) return
@@ -133,100 +177,102 @@ export function ProfileForm() {
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-2xl">
-                <FormField
-                    control={form.control}
-                    name="fullName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="John Banda" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                
+                {/* Personal Information Section */}
+                <div className="space-y-4">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Personal Information</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <FormField
+                            control={form.control}
+                            name="fullName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="John Doe" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="location"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Location</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Lusaka, Zambia" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Phone Number</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="+260 97 0000000" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="linkedin"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>LinkedIn URL (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://linkedin.com/in/johndoe" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <FormField
                         control={form.control}
-                        name="location"
+                        name="bio"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Location</FormLabel>
+                                <FormLabel>Bio / Summary</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Lusaka, Zambia" {...field} />
+                                    <Textarea
+                                        placeholder="Tell recruiters about yourself..."
+                                        className="resize-none min-h-[120px]"
+                                        {...field}
+                                    />
                                 </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="phoneNumber"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Phone Number</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="+260 97 0000000" {...field} />
-                                </FormControl>
+                                <FormDescription>
+                                    Briefly describe your professional background and goals.
+                                </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
                 </div>
 
-                <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Bio</FormLabel>
-                            <FormControl>
-                                <Textarea
-                                    placeholder="Tell us about yourself..."
-                                    className="resize-none"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormDescription>
-                                Brief summary of your professional background.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="skills"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Skills</FormLabel>
-                            <FormControl>
-                                <Input placeholder="React, Node.js, Project Management (comma separated)" {...field} />
-                            </FormControl>
-                            <FormDescription>
-                                Separate skills with commas.
-                            </FormDescription>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Skills & Resume Section */}
+                <div className="space-y-4 pt-4 border-t">
+                    <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Professional Details</h4>
+                    
                     <FormField
                         control={form.control}
-                        name="resumeUrl"
+                        name="skills"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Resume URL</FormLabel>
+                                <FormLabel>Skills</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https://..." {...field} />
+                                    <Input placeholder="React, Node.js, Project Management, Sales" {...field} />
                                 </FormControl>
                                 <FormDescription>
-                                    Link to your CV (Google Drive, Dropbox, etc.)
+                                    Separate skills with commas.
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
@@ -235,12 +281,71 @@ export function ProfileForm() {
 
                     <FormField
                         control={form.control}
-                        name="linkedin"
+                        name="resumeUrl"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>LinkedIn URL</FormLabel>
+                                <FormLabel>Resume / CV</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="https://linkedin.com/in/..." {...field} />
+                                    <div className="space-y-4">
+                                        <Input 
+                                            type="hidden" 
+                                            {...field} 
+                                        />
+                                        
+                                        {/* Upload Button Area */}
+                                        <div className="flex items-center gap-4">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => document.getElementById('resume-upload')?.click()}
+                                                disabled={uploading}
+                                            >
+                                                {uploading ? (
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                ) : (
+                                                    <Upload className="h-4 w-4 mr-2" />
+                                                )}
+                                                {uploading ? "Uploading..." : "Upload PDF Resume"}
+                                            </Button>
+                                            <input
+                                                id="resume-upload"
+                                                type="file"
+                                                accept="application/pdf"
+                                                className="hidden"
+                                                onChange={handleFileUpload}
+                                            />
+                                            <span className="text-xs text-muted-foreground">Max 5MB (PDF only)</span>
+                                        </div>
+
+                                        {/* Preview Area */}
+                                        {field.value && (
+                                            <div className="flex items-center gap-3 p-3 border rounded-md bg-muted/50 max-w-md">
+                                                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                                                    <FileText className="h-5 w-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate">Current Resume</p>
+                                                    <a 
+                                                        href={field.value} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                                                    >
+                                                        View File <ExternalLink className="h-3 w-3" />
+                                                    </a>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-muted-foreground hover:text-destructive"
+                                                    onClick={() => form.setValue('resumeUrl', '')}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -248,10 +353,12 @@ export function ProfileForm() {
                     />
                 </div>
 
-                <Button type="submit" disabled={saving}>
-                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Update Profile
-                </Button>
+                <div className="pt-4">
+                    <Button type="submit" disabled={saving || loading}>
+                        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </Button>
+                </div>
             </form>
         </Form>
     )

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Briefcase, Building2, MapPin, CalendarDays, Wallet } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { ApplySection } from "@/components/jobs/apply-section"
+import { ShareJobButton } from "@/components/jobs/share-job-button"
 
 export const dynamic = "force-dynamic"
 
@@ -47,7 +48,16 @@ export default async function JobPage({ params }: JobPageProps) {
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div className="space-y-4">
-                        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{typedJob.title}</h1>
+                        <div className="flex items-start justify-between">
+                            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{typedJob.title}</h1>
+                            <ShareJobButton 
+                                jobId={typedJob.id} 
+                                jobTitle={typedJob.title} 
+                                companyName={typedJob.company_name || typedJob.recruiter?.company_name || "Unknown Company"} 
+                                size="default"
+                                variant="outline"
+                            />
+                        </div>
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 text-muted-foreground">
                             <div className="flex items-center gap-1">
                                 <Building2 className="h-4 w-4" />
