@@ -27,6 +27,12 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
 
     const { data: jobs, error } = await jobsQuery
 
+    if (error) {
+        console.error("Error fetching jobs:", error)
+    } else {
+        console.log("Jobs fetched:", jobs?.length)
+    }
+
     // Manual type casting since we know the structure but Supabase types aren't auto-generated yet
     const typedJobs = (jobs || []) as unknown as (Job & { recruiter: { company_name: string } })[]
 
