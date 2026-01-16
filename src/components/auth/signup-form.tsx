@@ -51,6 +51,8 @@ export function SignupForm() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
         console.log("Attempting signup with values:", values)
         setIsLoading(true)
+        
+        // Attempt 1: With metadata
         const { data, error } = await supabase.auth.signUp({
             email: values.email,
             password: values.password,
@@ -63,7 +65,50 @@ export function SignupForm() {
         })
 
         if (error) {
-            console.error("Signup error details:", error)
+            console.error("Signup attempt 1 failed:", error)
+
+            // Check if it's a database error (status 500)
+            if (error.status === 500 || error.message.includes("Database error")) {
+                console.log("Attempting fallback signup without metadata...")
+                
+                // Attempt 2: Without metadata to bypass potential trigger casting issues
+                const { data: fallbackData, error: fallbackError } = await supabase.auth.signUp({
+                    email: values.email,
+                    password: values.password,
+                })
+
+                if (fallbackError) {
+                    console.error("Fallback signup failed:", fallbackError)
+                    toast.error(`Signup failed: ${error.message}`)
+                    setIsLoading(false)
+                    return
+                }
+
+                // If fallback worked, we need to update the profile manually
+                if (fallbackData.user) {
+                    console.log("Fallback signup success, updating profile...")
+                    const { error: updateError } = await supabase
+                        .from('profiles')
+                        .update({
+                            full_name: values.fullName,
+                            role: values.role
+                        })
+                        .eq('id', fallbackData.user.id)
+
+                    if (updateError) {
+                        console.error("Failed to update profile after fallback:", updateError)
+                        toast.warning("Account created, but failed to save profile details. Please update your profile.")
+                    } else {
+                        toast.success("Account created successfully")
+                    }
+
+                    router.refresh()
+                    router.push("/dashboard")
+                    setIsLoading(false)
+                    return
+                }
+            }
+
             toast.error(`Signup failed: ${error.message}`)
             setIsLoading(false)
             return
