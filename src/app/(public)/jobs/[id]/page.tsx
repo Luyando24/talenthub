@@ -93,7 +93,7 @@ export default async function JobPage({ params }: JobPageProps) {
                 <Separator />
 
                 {/* Content */}
-                <div className="grid gap-10 md:grid-cols-[1fr_250px] lg:grid-cols-[1fr_300px]">
+                <div className="grid gap-10 md:grid-cols-[1fr_250px] lg:grid-cols-[1fr_300px] mb-20 md:mb-0">
                     <div className="space-y-8">
                         <section className="space-y-4">
                             <h2 className="text-xl font-bold">About the Role</h2>
@@ -117,22 +117,71 @@ export default async function JobPage({ params }: JobPageProps) {
                     {/* Sidebar */}
                     <div className="space-y-6">
                         <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-4">
-                            <h3 className="font-semibold">Company Info</h3>
-                            <div className="text-sm text-muted-foreground">
-                                <p className="font-medium text-foreground">{typedJob.recruiter.company_name}</p>
-                                {typedJob.recruiter.company_website && (
-                                    <a
-                                        href={typedJob.recruiter.company_website}
-                                        target="_blank"
+                            <h3 className="font-semibold">Job Details</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                    <div>
+                                        <p className="font-medium">Location</p>
+                                        <p className="text-sm text-muted-foreground">{typedJob.location}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                    <div>
+                                        <p className="font-medium">Job Type</p>
+                                        <p className="text-sm text-muted-foreground">{typedJob.job_type}</p>
+                                    </div>
+                                </div>
+                                {typedJob.salary_range && (
+                                    <div className="flex items-start gap-3">
+                                        <Wallet className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                        <div>
+                                            <p className="font-medium">Salary</p>
+                                            <p className="text-sm text-muted-foreground">{typedJob.salary_range}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="flex items-start gap-3">
+                                    <CalendarDays className="h-5 w-5 text-muted-foreground mt-0.5" />
+                                    <div>
+                                        <p className="font-medium">Posted</p>
+                                        <p className="text-sm text-muted-foreground">{new Date(typedJob.created_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <Separator />
+                            <div className="pt-2 hidden md:block">
+                                <ApplySection jobId={typedJob.id} />
+                            </div>
+                        </div>
+
+                        {/* Company Card */}
+                        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6 space-y-4">
+                            <h3 className="font-semibold">About the Company</h3>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <Building2 className="h-5 w-5 text-muted-foreground" />
+                                    <span className="font-medium">{typedJob.company_name || typedJob.recruiter?.company_name}</span>
+                                </div>
+                                {typedJob.recruiter?.company_website && (
+                                    <a 
+                                        href={typedJob.recruiter.company_website} 
+                                        target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-primary hover:underline mt-1 block truncate"
+                                        className="text-sm text-primary hover:underline block"
                                     >
-                                        Website
+                                        Visit Website
                                     </a>
                                 )}
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Mobile Floating Apply Button */}
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t md:hidden z-50">
+                    <ApplySection jobId={typedJob.id} />
                 </div>
             </div>
         </div>
