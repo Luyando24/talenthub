@@ -69,12 +69,12 @@ export default function AboutPage() {
             </section>
 
             {/* Our Story Section */}
-            <section className="w-full py-12 md:py-24 lg:py-32 bg-background">
-                <div className="container px-4 md:px-6">
-                    <div className="flex flex-col md:flex-row gap-12 items-center">
-                        <div className="md:w-1/2 space-y-6">
-                            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Our Story</h2>
-                            <div className="space-y-4 text-muted-foreground md:text-lg">
+            <section className="w-full py-16 md:py-24 bg-background">
+                <div className="container max-w-6xl mx-auto px-6 md:px-12">
+                    <div className="flex flex-col md:flex-row gap-12 lg:gap-20 items-center">
+                        <div className="md:w-1/2 space-y-6 text-center md:text-left">
+                            <h2 className="text-3xl font-bold tracking-tighter md:text-4xl lg:text-5xl">Our Story</h2>
+                            <div className="space-y-6 text-muted-foreground text-lg leading-relaxed">
                                 <p>
                                     Our journey began in 2019 with a simple yet powerful vision: to bridge the gap between talent and opportunity in an ever-changing professional landscape.
                                 </p>
@@ -84,18 +84,15 @@ export default function AboutPage() {
                                 <p>
                                     Whether you're a job seeker looking for your perfect fit or a company seeking top talent, we've got you covered. We offer a wide range of HR solutions designed to empower individuals and propel businesses forward.
                                 </p>
-                                <p>
-                                    We redefine the traditional approach to HR services, offering a dynamic range of solutions tailored to meet the evolving needs of both individual talents and corporate entities.
-                                </p>
                             </div>
                         </div>
-                        <div className="md:w-1/2 flex justify-center">
-                            <div className="relative w-full max-w-md aspect-square bg-gradient-to-tr from-green-100 to-green-50 rounded-2xl overflow-hidden flex items-center justify-center p-8">
-                                <div className="text-center space-y-2">
-                                    <div className="text-4xl font-bold text-green-700">2019</div>
-                                    <div className="text-sm font-medium text-green-600">Established</div>
-                                    <div className="w-16 h-1 bg-green-500 mx-auto my-4"></div>
-                                    <p className="text-green-800 italic">"Redefining HR in Zambia"</p>
+                        <div className="md:w-1/2 flex justify-center w-full">
+                            <div className="relative w-full max-w-md aspect-square bg-gradient-to-tr from-green-100 to-green-50 rounded-3xl overflow-hidden flex items-center justify-center p-8 shadow-xl rotate-3 transition-transform hover:rotate-0 duration-500">
+                                <div className="text-center space-y-3">
+                                    <div className="text-6xl font-extrabold text-green-700">2019</div>
+                                    <div className="text-lg font-semibold text-green-600 uppercase tracking-widest">Established</div>
+                                    <div className="w-24 h-1.5 bg-green-500 mx-auto my-6 rounded-full"></div>
+                                    <p className="text-green-800 italic text-xl">"Redefining HR in Zambia"</p>
                                 </div>
                             </div>
                         </div>
@@ -104,64 +101,64 @@ export default function AboutPage() {
             </section>
 
             {/* Core Values Section */}
-            <section className="w-full py-12 md:py-24 lg:py-32 bg-muted/40">
-                <div className="container px-4 md:px-6">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <div className="inline-block rounded-lg bg-green-100 px-3 py-1 text-sm font-medium text-green-800 mb-4">
+            <section className="w-full py-16 md:py-24 bg-muted/30">
+                <div className="container max-w-6xl mx-auto px-6 md:px-12">
+                    <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+                        <div className="inline-block rounded-full bg-green-100 px-4 py-1.5 text-sm font-semibold text-green-800">
                             Our Culture
                         </div>
-                        <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">Our Core Values</h2>
-                        <p className="mt-4 text-muted-foreground md:text-xl">
+                        <h2 className="text-3xl font-bold tracking-tighter md:text-5xl">Our Core Values</h2>
+                        <p className="text-muted-foreground text-xl">
                             The principles that guide everything we do. We call it <span className="font-bold text-primary">ARISE</span>.
                         </p>
                     </div>
 
-                    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                        <Card className="bg-background border-none shadow-md hover:shadow-lg transition-shadow">
-                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
-                                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xl">A</div>
+                    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
+                        <Card className="bg-background border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4 h-full">
+                                <div className="h-16 w-16 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl shadow-inner mb-2">A</div>
                                 <h3 className="text-xl font-bold">Accountability</h3>
-                                <p className="text-muted-foreground">
+                                <p className="text-muted-foreground leading-relaxed">
                                     We are accountable and take responsibility for what we do.
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-background border-none shadow-md hover:shadow-lg transition-shadow">
-                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
-                                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xl">R</div>
+                        <Card className="bg-background border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4 h-full">
+                                <div className="h-16 w-16 rounded-2xl bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-2xl shadow-inner mb-2">R</div>
                                 <h3 className="text-xl font-bold">Respect</h3>
-                                <p className="text-muted-foreground">
+                                <p className="text-muted-foreground leading-relaxed">
                                     We respect diversity and recognize the worth and dignity of every individual.
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-background border-none shadow-md hover:shadow-lg transition-shadow">
-                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
-                                <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl">I</div>
+                        <Card className="bg-background border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4 h-full">
+                                <div className="h-16 w-16 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-2xl shadow-inner mb-2">I</div>
                                 <h3 className="text-xl font-bold">Integrity</h3>
-                                <p className="text-muted-foreground">
+                                <p className="text-muted-foreground leading-relaxed">
                                     We behave ethically, fairly and act openly in all our dealings.
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-background border-none shadow-md hover:shadow-lg transition-shadow lg:col-start-1.5"> {/* Center bottom row */}
-                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
-                                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-xl">S</div>
+                        <Card className="bg-background border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 lg:col-start-1 lg:ml-auto"> {/* Offset for centering */}
+                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4 h-full">
+                                <div className="h-16 w-16 rounded-2xl bg-green-100 flex items-center justify-center text-green-600 font-bold text-2xl shadow-inner mb-2">S</div>
                                 <h3 className="text-xl font-bold">Stewardship</h3>
-                                <p className="text-muted-foreground">
+                                <p className="text-muted-foreground leading-relaxed">
                                     We take pride in managing what has been entrusted to us.
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-background border-none shadow-md hover:shadow-lg transition-shadow">
-                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4">
-                                <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xl">E</div>
+                        <Card className="bg-background border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300 lg:mr-auto"> {/* Offset for centering */}
+                            <CardContent className="p-8 flex flex-col items-center text-center space-y-4 h-full">
+                                <div className="h-16 w-16 rounded-2xl bg-red-100 flex items-center justify-center text-red-600 font-bold text-2xl shadow-inner mb-2">E</div>
                                 <h3 className="text-xl font-bold">Excellence</h3>
-                                <p className="text-muted-foreground">
+                                <p className="text-muted-foreground leading-relaxed">
                                     We strive to achieve excellence in all we do.
                                 </p>
                             </CardContent>
