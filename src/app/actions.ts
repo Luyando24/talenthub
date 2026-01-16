@@ -49,6 +49,8 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
         if (!userData.user) {
             return { error: "Failed to create user" }
         }
+        
+        console.log("User created successfully with ID:", userData.user.id)
 
         // 2. Standard Client to sign in (set cookies)
         const supabase = await createServerClient()
@@ -65,20 +67,25 @@ export async function signupAction(data: z.infer<typeof signupSchema>) {
         // 3. Ensure extended profile exists (just in case trigger failed, though trigger logic was fixed)
         // We can do this via Admin client to be safe and fast
         if (data.role === 'RECRUITER') {
-            await supabaseAdmin
+            const { error: profileError } = await supabaseAdmin
                 .from('recruiter_profiles')
                 .upsert({
                     id: userData.user.id,
                     company_name: data.fullName,
                     is_approved: false
                 })
+            
+            if (profileError) console.error("Recruiter profile creation error:", profileError)
+
         } else {
-            await supabaseAdmin
+            const { error: profileError } = await supabaseAdmin
                 .from('candidate_profiles')
                 .upsert({
                     id: userData.user.id,
                     skills: []
                 })
+
+            if (profileError) console.error("Candidate profile creation error:", profileError)
         }
 
         return { success: true }

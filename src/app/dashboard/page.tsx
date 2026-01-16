@@ -8,20 +8,23 @@ export default async function DashboardPage() {
 
     const {
         data: { user },
+        error: authError
     } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
+        console.log("Dashboard: No user found or auth error", authError)
         redirect("/login")
     }
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single()
     
     // If profile is missing (e.g. user deleted from DB but session remains), force logout/redirect
-    if (!profile) {
+    if (profileError || !profile) {
+        console.log("Dashboard: No profile found for user", user.id, profileError)
         // We can't easily sign out from server component without redirecting to a route handler
         // For now, redirect to login which will eventually clear session if invalid
         redirect("/login")
