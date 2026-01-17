@@ -13,36 +13,69 @@ import { Building2, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+export const dynamic = "force-dynamic"
+
 export default async function CandidateApplicationsPage() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) redirect("/login")
 
-    const { data: applications } = await supabase
+    // Debug logging
+    console.log("Fetching applications for user:", user.id)
+
+    const { data: applications, error } = await supabase
         .from("applications")
         .select(`
         id,
         status,
         created_at,
-        job:jobs(id, title, location, job_type, recruiter:recruiter_profiles(company_name))
+        job:jobs(id, title, location, job_type, recruiter_id)
     `)
         .eq("candidate_id", user.id)
         .order("created_at", { ascending: false })
 
-    // Type casting for joined data
-    const typedApps = (applications || []).map(app => {
-        const job = Array.isArray(app.job) ? app.job[0] : app.job
-        const recruiter = Array.isArray(job.recruiter) ? job.recruiter[0] : job.recruiter
+    if (error) {
+        console.error("Error fetching applications:", error)
+        return <div>Error loading applications.</div>
+    }
 
-        return {
-            ...app,
-            job: {
-                ...job,
-                recruiter
+    console.log("Applications found:", applications?.length)
+
+    // Manual join for recruiters to avoid deep nesting issues if any
+    let typedApps: any[] = []
+    
+    if (applications && applications.length > 0) {
+        // Get all unique recruiter IDs
+        const recruiterIds = Array.from(new Set(applications.map((app: any) => {
+             const job = Array.isArray(app.job) ? app.job[0] : app.job
+             return job?.recruiter_id
+        }).filter(Boolean)))
+
+        // Fetch recruiter profiles
+        const { data: recruiters } = await supabase
+            .from("recruiter_profiles")
+            .select("id, company_name")
+            .in("id", recruiterIds)
+        
+        const recruiterMap = new Map(recruiters?.map(r => [r.id, r]) || [])
+
+        typedApps = applications.map(app => {
+            const job = Array.isArray(app.job) ? app.job[0] : app.job
+            // Fallback for missing job (e.g. deleted job)
+            if (!job) return { ...app, job: { title: "Unknown Job", recruiter: { company_name: "Unknown" } } }
+
+            const recruiter = recruiterMap.get(job.recruiter_id) || { company_name: "Unknown Company" }
+
+            return {
+                ...app,
+                job: {
+                    ...job,
+                    recruiter
+                }
             }
-        }
-    })
+        })
+    }
 
     return (
         <div className="space-y-6">
