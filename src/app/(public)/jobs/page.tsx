@@ -5,6 +5,7 @@ import { Job } from "@/types"
 import { Search, Briefcase } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 
 export const dynamic = "force-dynamic"
 
@@ -58,6 +59,7 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
     return (
         <div className="min-h-[calc(100vh-3.5rem)] bg-muted/5">
             <div className="container py-12 px-4 md:px-6 max-w-7xl mx-auto">
+                <Breadcrumbs className="mb-6" />
                 <div className="flex flex-col gap-10">
                     <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b pb-8">
                         <div className="space-y-2">

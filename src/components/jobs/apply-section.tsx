@@ -43,30 +43,40 @@ export function ApplySection({ jobId }: ApplySectionProps) {
     const supabase = createClient()
 
     useEffect(() => {
-        // Only run check if we are sure we have a user and profile is loaded
-        // But also, if isLoading is false and we have no user, we shouldn't be checking
+        // If still loading auth state, do nothing yet
         if (isLoading) return
 
-        if (user && profile?.role === 'CANDIDATE') {
-            const checkApplication = async () => {
-                setCheckingApplication(true)
-                try {
-                    const { data } = await supabase
-                        .from('applications')
-                        .select('id')
-                        .eq('job_id', jobId)
-                        .eq('candidate_id', user.id)
-                        .maybeSingle() // Use maybeSingle to avoid errors on no rows
-
-                    if (data) setHasApplied(true)
-                } catch (error) {
-                    console.error("Error checking application status:", error)
-                } finally {
-                    setCheckingApplication(false)
-                }
-            }
-            checkApplication()
+        // If no user is logged in, or user is not a candidate, we don't need to check
+        if (!user || profile?.role !== 'CANDIDATE') {
+            setCheckingApplication(false)
+            return
         }
+
+        const checkApplication = async () => {
+            setCheckingApplication(true)
+            try {
+                const { data, error } = await supabase
+                    .from('applications')
+                    .select('id')
+                    .eq('job_id', jobId)
+                    .eq('candidate_id', user.id)
+                    .maybeSingle()
+
+                if (error) {
+                    console.error("Error checking application:", error)
+                }
+                
+                if (data) {
+                    setHasApplied(true)
+                }
+            } catch (error) {
+                console.error("Unexpected error checking application status:", error)
+            } finally {
+                setCheckingApplication(false)
+            }
+        }
+        
+        checkApplication()
     }, [user, profile, isLoading, jobId, supabase])
 
     const fetchQuestions = async () => {

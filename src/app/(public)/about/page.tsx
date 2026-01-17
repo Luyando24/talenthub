@@ -2,10 +2,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { CheckCircle2, Globe2, Users2, Zap } from "lucide-react"
 import Link from "next/link"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 
 export default function AboutPage() {
     return (
         <div className="flex flex-col min-h-screen">
+            <div className="container px-4 md:px-6 pt-6">
+                <Breadcrumbs />
+            </div>
             {/* Hero Section */}
             <section className="w-full py-12 md:py-24 lg:py-32 bg-primary/5">
                 <div className="container px-4 md:px-6">

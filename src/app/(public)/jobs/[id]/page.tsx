@@ -6,6 +6,7 @@ import { Briefcase, Building2, MapPin, CalendarDays, Wallet } from "lucide-react
 import { Separator } from "@/components/ui/separator"
 import { ApplySection } from "@/components/jobs/apply-section"
 import { ShareJobButton } from "@/components/jobs/share-job-button"
+import { Breadcrumbs } from "@/components/layout/breadcrumbs"
 
 export const dynamic = "force-dynamic"
 
@@ -44,6 +45,7 @@ export default async function JobPage({ params }: JobPageProps) {
 
     return (
         <div className="container py-10 px-4 md:px-6">
+            <Breadcrumbs className="mb-6" />
             <div className="mx-auto max-w-4xl space-y-8">
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
