@@ -21,6 +21,7 @@ import { createClient } from "@/utils/supabase/client"
 import { useEffect, useState } from "react"
 import { CandidateProfile } from "@/types"
 import { Loader2, Upload, FileText, Trash2, ExternalLink } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
 
 const profileFormSchema = z.object({
     fullName: z.string().min(2, {
@@ -43,6 +44,7 @@ export function ProfileForm() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [uploading, setUploading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState(0)
     const supabase = createClient()
 
     const form = useForm<ProfileFormValues>({
@@ -92,18 +94,37 @@ export function ProfileForm() {
 
         const file = e.target.files[0]
         
-        // Validation
-        if (file.type !== 'application/pdf') {
-            toast.error("Please upload a PDF file.")
+        // Improved Validation
+        const validTypes = ['application/pdf']
+        const maxSize = 5 * 1024 * 1024 // 5MB
+
+        if (!validTypes.includes(file.type)) {
+            toast.error("Invalid file type. Please upload a PDF file.")
             return
         }
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-            toast.error("File size must be less than 5MB.")
+
+        if (file.size > maxSize) {
+            toast.error(`File size too large. Maximum size is 5MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`)
             return
         }
 
         setUploading(true)
+        setUploadProgress(0)
+
         try {
+            // Simulate progress since Supabase client upload doesn't expose progress events easily in this version
+            // For real progress, we'd need to use XMLHttpRequest or a library like axios wrapping the upload
+            // Or if we were using TUS. For now, we simulate a smooth progress bar.
+            const progressInterval = setInterval(() => {
+                setUploadProgress(prev => {
+                    if (prev >= 90) {
+                        clearInterval(progressInterval)
+                        return 90
+                    }
+                    return prev + 10
+                })
+            }, 200)
+
             const fileExt = file.name.split('.').pop()
             const fileName = `${user?.id}-${Math.random().toString(36).substring(2)}.${fileExt}`
             const filePath = `${fileName}`
@@ -112,6 +133,9 @@ export function ProfileForm() {
             const { error: uploadError } = await supabase.storage
                 .from('resumes')
                 .upload(filePath, file)
+
+            clearInterval(progressInterval)
+            setUploadProgress(100)
 
             if (uploadError) throw uploadError
 
@@ -125,8 +149,11 @@ export function ProfileForm() {
         } catch (error) {
             console.error('Upload error:', error)
             toast.error("Failed to upload resume. Please try again.")
+            setUploadProgress(0)
         } finally {
             setUploading(false)
+            // Reset progress after a short delay to hide bar nicely
+            setTimeout(() => setUploadProgress(0), 1000)
         }
     }
 
@@ -293,28 +320,38 @@ export function ProfileForm() {
                                         />
                                         
                                         {/* Upload Button Area */}
-                                        <div className="flex items-center gap-4">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() => document.getElementById('resume-upload')?.click()}
-                                                disabled={uploading}
-                                            >
-                                                {uploading ? (
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                ) : (
-                                                    <Upload className="h-4 w-4 mr-2" />
-                                                )}
-                                                {uploading ? "Uploading..." : "Upload PDF Resume"}
-                                            </Button>
-                                            <input
-                                                id="resume-upload"
-                                                type="file"
-                                                accept="application/pdf"
-                                                className="hidden"
-                                                onChange={handleFileUpload}
-                                            />
-                                            <span className="text-xs text-muted-foreground">Max 5MB (PDF only)</span>
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex items-center gap-4">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => document.getElementById('resume-upload')?.click()}
+                                                    disabled={uploading}
+                                                >
+                                                    {uploading ? (
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    ) : (
+                                                        <Upload className="h-4 w-4 mr-2" />
+                                                    )}
+                                                    {uploading ? "Uploading..." : "Upload PDF Resume"}
+                                                </Button>
+                                                <input
+                                                    id="resume-upload"
+                                                    type="file"
+                                                    accept="application/pdf"
+                                                    className="hidden"
+                                                    onChange={handleFileUpload}
+                                                />
+                                                <span className="text-xs text-muted-foreground">Max 5MB (PDF only)</span>
+                                            </div>
+                                            
+                                            {/* Progress Bar */}
+                                            {uploading && (
+                                                <div className="space-y-1">
+                                                    <Progress value={uploadProgress} className="h-2 w-full max-w-md" />
+                                                    <p className="text-xs text-muted-foreground text-right max-w-md">{uploadProgress}%</p>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Preview Area */}
