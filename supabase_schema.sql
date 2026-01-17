@@ -26,6 +26,8 @@ CREATE TABLE public.candidate_profiles (
   bio TEXT,
   location TEXT DEFAULT 'Lusaka, Zambia',
   phone_number TEXT,
+  education JSONB DEFAULT '[]'::jsonb,
+  work_experience JSONB DEFAULT '[]'::jsonb,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
