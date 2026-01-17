@@ -31,7 +31,7 @@ const educationSchema = z.object({
     field_of_study: z.string().min(2, "Field of study is required"),
     start_date: z.string().min(1, "Start date is required"),
     end_date: z.string().optional(),
-    current: z.boolean().default(false),
+    current: z.boolean(),
     description: z.string().optional(),
 })
 
@@ -41,7 +41,7 @@ const workExperienceSchema = z.object({
     location: z.string().optional(),
     start_date: z.string().min(1, "Start date is required"),
     end_date: z.string().optional(),
-    current: z.boolean().default(false),
+    current: z.boolean(),
     description: z.string().optional(),
 })
 
@@ -478,6 +478,25 @@ export function ProfileForm() {
                                         )}
                                     />
                                 </div>
+                                <FormField
+                                    control={form.control}
+                                    name={`education.${index}.current`}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <div className="space-y-1 leading-none">
+                                                <FormLabel>
+                                                    I currently study here
+                                                </FormLabel>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
                             </div>
                         ))}
                     </div>
@@ -565,6 +584,25 @@ export function ProfileForm() {
                                         )}
                                     />
                                 </div>
+                                <FormField
+                                    control={form.control}
+                                    name={`work_experience.${index}.current`}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <div className="space-y-1 leading-none">
+                                                <FormLabel>
+                                                    I currently work here
+                                                </FormLabel>
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name={`work_experience.${index}.description`}
