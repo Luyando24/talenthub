@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server"
 import { Briefcase, CheckCircle, FileText, User } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { ProfileCompletionModal } from "@/components/dashboard/candidate/profile-completion-modal"
 
 export const dynamic = "force-dynamic"
 
@@ -33,17 +34,47 @@ export default async function CandidateDashboard() {
 
     // Calculate profile completion (simple heuristic)
     let completionPercentage = 20 // Base for account
-    if (profile?.full_name) completionPercentage += 20 // usually in base profile, but check here if needed or assume synced
-    if (profile?.skills && profile.skills.length > 0) completionPercentage += 20
-    if (profile?.resume_url) completionPercentage += 20
-    if (profile?.location) completionPercentage += 10
-    if (profile?.bio) completionPercentage += 10
+    const missingFields = []
+    
+    if (profile?.full_name) {
+        completionPercentage += 20
+    } else {
+        missingFields.push("Full Name")
+    }
+
+    if (profile?.skills && profile.skills.length > 0) {
+        completionPercentage += 20
+    } else {
+        missingFields.push("Skills")
+    }
+
+    if (profile?.resume_url) {
+        completionPercentage += 20
+    } else {
+        missingFields.push("Resume / CV")
+    }
+
+    if (profile?.location) {
+        completionPercentage += 10
+    } else {
+        missingFields.push("Location")
+    }
+
+    if (profile?.bio) {
+        completionPercentage += 10
+    } else {
+        missingFields.push("Bio")
+    }
 
     // Adjust max to 100
     completionPercentage = Math.min(completionPercentage, 100)
 
     return (
         <div className="space-y-6">
+            <ProfileCompletionModal 
+                completionPercentage={completionPercentage} 
+                missingFields={missingFields} 
+            />
             <div className="flex items-center justify-between">
                 <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
                 <div className="flex items-center gap-2">
