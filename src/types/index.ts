@@ -10,6 +10,26 @@ export interface Profile {
     updated_at: string;
 }
 
+export interface Education {
+    school: string
+    degree: string
+    field_of_study: string
+    start_date: string
+    end_date?: string
+    current: boolean
+    description?: string
+}
+
+export interface WorkExperience {
+    company: string
+    position: string
+    location?: string
+    start_date: string
+    end_date?: string
+    current: boolean
+    description?: string
+}
+
 export interface CandidateProfile extends Profile {
     resume_url?: string;
     linkedin_url?: string;
@@ -17,6 +37,8 @@ export interface CandidateProfile extends Profile {
     bio?: string;
     location: string;
     phone_number?: string;
+    education?: Education[];
+    work_experience?: WorkExperience[];
 }
 
 export interface RecruiterProfile extends Profile {

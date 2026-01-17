@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useFieldArray, useForm } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,13 +15,35 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { useAuth } from "@/context/auth-context"
 import { createClient } from "@/utils/supabase/client"
 import { useEffect, useState } from "react"
 import { CandidateProfile } from "@/types"
-import { Loader2, Upload, FileText, Trash2, ExternalLink } from "lucide-react"
+import { Loader2, Upload, FileText, Trash2, ExternalLink, Plus, X, GraduationCap, Briefcase } from "lucide-react"
 import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+
+const educationSchema = z.object({
+    school: z.string().min(2, "School name is required"),
+    degree: z.string().min(2, "Degree is required"),
+    field_of_study: z.string().min(2, "Field of study is required"),
+    start_date: z.string().min(1, "Start date is required"),
+    end_date: z.string().optional(),
+    current: z.boolean().default(false),
+    description: z.string().optional(),
+})
+
+const workExperienceSchema = z.object({
+    company: z.string().min(2, "Company name is required"),
+    position: z.string().min(2, "Position is required"),
+    location: z.string().optional(),
+    start_date: z.string().min(1, "Start date is required"),
+    end_date: z.string().optional(),
+    current: z.boolean().default(false),
+    description: z.string().optional(),
+})
 
 const profileFormSchema = z.object({
     fullName: z.string().min(2, {
@@ -31,10 +53,12 @@ const profileFormSchema = z.object({
     location: z.string().min(2, {
         message: "Location is required.",
     }),
-    skills: z.string().describe("Comma separated skills"),
+    skills: z.array(z.string()).min(1, "At least one skill is required"),
     linkedin: z.string().url().optional().or(z.literal("")),
     resumeUrl: z.string().url().optional().or(z.literal("")),
     phoneNumber: z.string().optional(),
+    education: z.array(educationSchema).optional(),
+    work_experience: z.array(workExperienceSchema).optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>
@@ -47,18 +71,49 @@ export function ProfileForm() {
     const [uploadProgress, setUploadProgress] = useState(0)
     const supabase = createClient()
 
+    const [skillInput, setSkillInput] = useState("")
+
     const form = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
             fullName: "",
             bio: "",
             location: "Lusaka, Zambia",
-            skills: "",
+            skills: [],
             linkedin: "",
             resumeUrl: "",
             phoneNumber: "",
+            education: [],
+            work_experience: [],
         },
     })
+
+    const { fields: eduFields, append: appendEdu, remove: removeEdu } = useFieldArray({
+        control: form.control,
+        name: "education",
+    })
+
+    const { fields: workFields, append: appendWork, remove: removeWork } = useFieldArray({
+        control: form.control,
+        name: "work_experience",
+    })
+
+    const handleAddSkill = (e: React.KeyboardEvent<HTMLInputElement> | React.MouseEvent) => {
+        if (e.type === 'keydown' && (e as React.KeyboardEvent).key !== 'Enter') return
+        e.preventDefault()
+        
+        const skill = skillInput.trim()
+        if (skill && !form.getValues('skills').includes(skill)) {
+            const currentSkills = form.getValues('skills')
+            form.setValue('skills', [...currentSkills, skill])
+            setSkillInput("")
+        }
+    }
+
+    const removeSkill = (skillToRemove: string) => {
+        const currentSkills = form.getValues('skills')
+        form.setValue('skills', currentSkills.filter(s => s !== skillToRemove))
+    }
 
     useEffect(() => {
         if (user) {
@@ -78,10 +133,13 @@ export function ProfileForm() {
                     const candidateData = data as CandidateProfile
                     form.setValue('bio', candidateData.bio || "")
                     form.setValue('location', candidateData.location || "Lusaka, Zambia")
-                    form.setValue('skills', candidateData.skills?.join(", ") || "")
+                    form.setValue('skills', candidateData.skills || [])
                     form.setValue('linkedin', candidateData.linkedin_url || "")
                     form.setValue('resumeUrl', candidateData.resume_url || "")
                     form.setValue('phoneNumber', candidateData.phone_number || "")
+                    // Need to cast or handle if DB structure doesn't match yet, assume it does or will be ignored
+                    if (candidateData.education) form.setValue('education', candidateData.education)
+                    if (candidateData.work_experience) form.setValue('work_experience', candidateData.work_experience)
                 }
                 setLoading(false)
             }
@@ -169,18 +227,18 @@ export function ProfileForm() {
                 .eq('id', user.id)
 
             // 2. Upsert candidate profile
-            const skillsArray = data.skills.split(',').map(s => s.trim()).filter(Boolean)
-
             const { error } = await supabase
                 .from('candidate_profiles')
                 .upsert({
                     id: user.id,
                     bio: data.bio,
                     location: data.location,
-                    skills: skillsArray,
+                    skills: data.skills,
                     linkedin_url: data.linkedin || null,
                     resume_url: data.resumeUrl || null,
                     phone_number: data.phoneNumber || null,
+                    education: data.education,
+                    work_experience: data.work_experience,
                     updated_at: new Date().toISOString(),
                 })
 
@@ -286,25 +344,243 @@ export function ProfileForm() {
                 </div>
 
                 {/* Skills & Resume Section */}
-                <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-6 pt-4 border-t">
                     <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Professional Details</h4>
                     
-                    <FormField
-                        control={form.control}
-                        name="skills"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Skills</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="React, Node.js, Project Management, Sales" {...field} />
-                                </FormControl>
-                                <FormDescription>
-                                    Separate skills with commas.
-                                </FormDescription>
-                                <FormMessage />
-                            </FormItem>
+                    <div className="space-y-3">
+                        <FormLabel>Skills</FormLabel>
+                        <div className="flex gap-2">
+                            <Input 
+                                placeholder="Add a skill (e.g. React, Project Management)" 
+                                value={skillInput}
+                                onChange={(e) => setSkillInput(e.target.value)}
+                                onKeyDown={handleAddSkill}
+                            />
+                            <Button type="button" onClick={handleAddSkill} size="icon">
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 min-h-[2.5rem] p-2 border rounded-md bg-muted/20">
+                            {form.watch('skills').length === 0 && (
+                                <p className="text-sm text-muted-foreground italic p-1">No skills added yet.</p>
+                            )}
+                            {form.watch('skills').map((skill) => (
+                                <Badge key={skill} variant="secondary" className="pl-3 pr-1 py-1 gap-1 text-sm">
+                                    {skill}
+                                    <button 
+                                        type="button" 
+                                        onClick={() => removeSkill(skill)}
+                                        className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                        <p className="text-[0.8rem] text-muted-foreground">
+                            Press Enter to add a skill.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium flex items-center gap-2">
+                                <GraduationCap className="h-4 w-4" /> Education
+                            </h4>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendEdu({ school: "", degree: "", field_of_study: "", start_date: "", current: false })}>
+                                <Plus className="h-4 w-4 mr-2" /> Add Education
+                            </Button>
+                        </div>
+                        
+                        {eduFields.length === 0 && (
+                            <div className="text-sm text-muted-foreground italic border border-dashed rounded-md p-4 text-center">
+                                No education history added.
+                            </div>
                         )}
-                    />
+
+                        {eduFields.map((field, index) => (
+                            <div key={field.id} className="grid gap-4 p-4 border rounded-lg relative bg-card">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                                    onClick={() => removeEdu(index)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name={`education.${index}.school`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>School / University</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="University of Zambia" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`education.${index}.degree`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Degree</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Bachelor's" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name={`education.${index}.field_of_study`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Field of Study</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Computer Science" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name={`education.${index}.start_date`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Start Year</FormLabel>
+                                                <FormControl>
+                                                    <Input type="month" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`education.${index}.end_date`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>End Year</FormLabel>
+                                                <FormControl>
+                                                    <Input type="month" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium flex items-center gap-2">
+                                <Briefcase className="h-4 w-4" /> Work Experience
+                            </h4>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendWork({ company: "", position: "", start_date: "", current: false })}>
+                                <Plus className="h-4 w-4 mr-2" /> Add Experience
+                            </Button>
+                        </div>
+
+                        {workFields.length === 0 && (
+                            <div className="text-sm text-muted-foreground italic border border-dashed rounded-md p-4 text-center">
+                                No work experience added.
+                            </div>
+                        )}
+
+                        {workFields.map((field, index) => (
+                            <div key={field.id} className="grid gap-4 p-4 border rounded-lg relative bg-card">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
+                                    onClick={() => removeWork(index)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name={`work_experience.${index}.company`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Company</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Tech Corp Ltd" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`work_experience.${index}.position`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Position</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Software Engineer" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FormField
+                                        control={form.control}
+                                        name={`work_experience.${index}.start_date`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Start Date</FormLabel>
+                                                <FormControl>
+                                                    <Input type="month" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name={`work_experience.${index}.end_date`}
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>End Date</FormLabel>
+                                                <FormControl>
+                                                    <Input type="month" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name={`work_experience.${index}.description`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Description</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder="Describe your responsibilities and achievements..." className="min-h-[80px]" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        ))}
+                    </div>
 
                     <FormField
                         control={form.control}
