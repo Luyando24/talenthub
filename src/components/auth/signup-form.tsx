@@ -15,9 +15,9 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { createClient } from "@/utils/supabase/client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Loader2, User, Briefcase, ArrowRight, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +34,7 @@ type Step = 'role-selection' | 'form'
 
 export function SignupForm() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [isLoading, setIsLoading] = useState(false)
     const [step, setStep] = useState<Step>('role-selection')
     // const supabase = createClient() // No longer used for signup directly
@@ -47,6 +48,17 @@ export function SignupForm() {
             role: "CANDIDATE",
         },
     })
+
+    useEffect(() => {
+        const roleParam = searchParams.get("role")
+        if (roleParam === "recruiter" || roleParam === "RECRUITER") {
+            form.setValue("role", "RECRUITER")
+            setStep('form')
+        } else if (roleParam === "candidate" || roleParam === "CANDIDATE") {
+            form.setValue("role", "CANDIDATE")
+            setStep('form')
+        }
+    }, [searchParams, form])
 
     const selectedRole = form.watch("role")
 
